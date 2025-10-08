@@ -1,67 +1,51 @@
 package com.example.todo.controller;
 
-import com.example.todo.model.Todo;
+import com.example.todo.dto.CreateTodoDto;
+import com.example.todo.dto.TodoDto;
 import com.example.todo.service.TodoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/todos")
+@CrossOrigin(origins = "*")
 public class TodoController {
+    private final TodoService service;
 
-    @Autowired
-    private TodoService todoService;
+    public TodoController(TodoService service) {
+        this.service = service;
+    }
 
-    // GET all todos
     @GetMapping
-    public List<Todo> getAllTodos() {
-        return todoService.getAllTodos();
+    public Page<TodoDto> list(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "20") int size) {
+        return service.list(page, size);
     }
 
-    // POST a new todo
     @PostMapping
-    public Todo createTodo(@RequestBody Todo todo) {
-        return todoService.createTodo(todo);
+    public ResponseEntity<TodoDto> create(@Valid @RequestBody CreateTodoDto dto) {
+        var created = service.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // DELETE a todo by id
+    @GetMapping("/{id}")
+    public ResponseEntity<TodoDto> get(@PathVariable Long id) {
+        return service.get(id).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TodoDto> update(@PathVariable Long id, @Valid @RequestBody CreateTodoDto dto) {
+        return service.update(id, dto).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTodo(@PathVariable Long id) {
-        boolean deleted = todoService.deleteTodo(id);
-        if (deleted) {
-            return ResponseEntity.ok().body(
-                    new ApiResponse(200, "Todo deleted successfully", "/api/todos/" + id));
-        } else {
-            return ResponseEntity.status(404).body(
-                    new ApiResponse(404, "Todo not found with id " + id, "/api/todos/" + id));
-        }
-    }
-
-    // Inner class for DELETE response JSON
-    public static class ApiResponse {
-        private int status;
-        private String message;
-        private String path;
-
-        public ApiResponse(int status, String message, String path) {
-            this.status = status;
-            this.message = message;
-            this.path = path;
-        }
-
-        public int getStatus() {
-            return status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getPath() {
-            return path;
-        }
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        boolean deleted = service.delete(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

@@ -1,20 +1,42 @@
 package com.example.todo.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+import java.time.Instant;
+
 @Entity
 @Table(name = "todos")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Todo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     private String title;
-    private boolean completed;
+
+    private String description;
+
+    private Boolean completed = false;
+
+    private Instant createdAt = Instant.now();
+
+    private Instant updatedAt = Instant.now();
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
 }
