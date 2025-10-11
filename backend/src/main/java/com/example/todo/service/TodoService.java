@@ -1,71 +1,52 @@
 package com.example.todo.service;
 
-import com.example.todo.dto.CreateTodoDto;
-import com.example.todo.dto.TodoDto;
 import com.example.todo.model.Todo;
 import com.example.todo.repository.TodoRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TodoService {
-    private final TodoRepository repo;
 
-    public TodoService(TodoRepository repo) {
-        this.repo = repo;
+    private final TodoRepository repository;
+
+    public TodoService(TodoRepository repository) {
+        this.repository = repository;
     }
 
-    public Page<TodoDto> list(int page, int size) {
-        var pr = repo.findAll(PageRequest.of(page, size));
-        List<TodoDto> dtos = pr.stream().map(this::toDto).collect(Collectors.toList());
-        return new PageImpl<>(dtos, pr.getPageable(), pr.getTotalElements());
+    // List all todos
+    public List<Todo> listAll() {
+        return repository.findAll();
     }
 
-    public TodoDto create(CreateTodoDto dto) {
-        Todo t = Todo.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .completed(false)
-                .build();
-        var saved = repo.save(t);
-        return toDto(saved);
+    // Create a new todo
+    public Todo create(Todo todo) {
+        return repository.save(todo);
     }
 
-    public Optional<TodoDto> get(Long id) {
-        return repo.findById(id).map(this::toDto);
+    // Get a todo by ID
+    public Optional<Todo> get(Long id) {
+        return repository.findById(id);
     }
 
-    public Optional<TodoDto> update(Long id, CreateTodoDto dto) {
-        return repo.findById(id).map(t -> {
-            t.setTitle(dto.getTitle());
-            t.setDescription(dto.getDescription());
-            var saved = repo.save(t);
-            return toDto(saved);
+    // Update a todo by ID
+    public Optional<Todo> update(Long id, Todo updatedTodo) {
+        return repository.findById(id).map(todo -> {
+            todo.setTitle(updatedTodo.getTitle());
+            todo.setDescription(updatedTodo.getDescription());
+            todo.setCompleted(updatedTodo.isCompleted());
+            return repository.save(todo);
         });
     }
 
+    // Delete a todo by ID
     public boolean delete(Long id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
             return true;
         }
         return false;
-    }
-
-    private TodoDto toDto(Todo t) {
-        return TodoDto.builder()
-                .id(t.getId())
-                .title(t.getTitle())
-                .description(t.getDescription())
-                .completed(t.getCompleted())
-                .createdAt(t.getCreatedAt())
-                .updatedAt(t.getUpdatedAt())
-                .build();
     }
 }

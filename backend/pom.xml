@@ -16,7 +16,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.2.6</version>
-        <relativePath/> 
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <properties>
@@ -58,7 +58,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Optional: DevTools -->
+        <!-- Optional: Spring Boot DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

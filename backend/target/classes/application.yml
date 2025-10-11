@@ -1,15 +1,23 @@
 spring:
-  config:
-    activate:
-      on-profile: mysql
-
   datasource:
-    url: jdbc:mysql://db:3306/todo_db?useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://my-todo-db.c2hgkkeui51a.us-east-1.rds.amazonaws.com:3306/mytodo?useSSL=false&serverTimezone=UTC
+    username: admin
+    password: Nikhilgorade
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: user
-    password: password
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: update # 'update' is okay for dev; use 'validate' or 'none' in prod
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
